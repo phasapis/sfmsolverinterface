@@ -23,6 +23,17 @@ public class UserAuthenticationManagenent
         copyFolder(new File(prop.getPropertyValue("BaseCADFolder")), newFolder);
     }
 
+    public void createSessionHeadFolder(String sessionid)
+    throws IOException
+    {
+        PropertiesManager prop = PropertiesManager.getPropertiesManager();
+        File newFolder = new File(prop.getPropertyValue("BaseSessionFolder") + sessionid);
+        
+        newFolder.mkdir();
+        
+        copyFolder(new File(prop.getPropertyValue("BaseHeadFolder")), newFolder);
+    }    
+    
     protected void copyFolder(File src, File dest)
     throws IOException
     { 

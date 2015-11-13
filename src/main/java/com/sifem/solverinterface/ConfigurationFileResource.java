@@ -63,6 +63,41 @@ public class ConfigurationFileResource {
                 
             return Response.status(Response.Status.OK).build(); 
 	}
+
+	@POST
+	@Path("/upload/head/{sessionid}")
+	@Consumes("application/x-www-form-urlencoded")
+	public Response uploadHeadFile(@PathParam("sessionid") String sessionID, @FormParam("simulationInstance") String PAKCRestServiceJSON)
+        {
+                PropertiesManager prop = PropertiesManager.getPropertiesManager();
+                UserAuthenticationManagenent userAuthenticationManagenent = new UserAuthenticationManagenent();
+                
+                try {
+                    userAuthenticationManagenent.createSessionHeadFolder(sessionID);
+                } catch (IOException ex) {
+                    Logger.getLogger(ConfigurationFileResource.class.getName()).log(Level.SEVERE, null, ex);
+                    return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();                    
+                }
+
+                String path = new String(prop.getPropertyValue("BaseSessionFolder") 
+                                            + sessionID 
+                                            + "/" + prop.getPropertyValue("ConfigurationPath"));                 
+
+                System.out.println(" --------------------- " + sessionID + PAKCRestServiceJSON);
+                Gson gson = new GsonBuilder().create();
+                PAKCRestServiceTO simulationInstanceTO = gson.fromJson(PAKCRestServiceJSON, PAKCRestServiceTO.class);
+                try {
+                    System.out.println(IOUtils.toString(simulationInstanceTO.getCfgFile(), "UTF-8"));
+                    FileUtils.writeByteArrayToFile(new File(path), simulationInstanceTO.getCfgFile());
+                } catch (IOException ex) {
+                    Logger.getLogger(ConfigurationFileResource.class.getName()).log(Level.SEVERE, null, ex);
+                    return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();                    
+                }
+                
+            return Response.status(Response.Status.OK).build(); 
+	}
+
+        
         
 	private void writeFile(byte[] content, String filename)
         throws IOException

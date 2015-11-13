@@ -92,6 +92,44 @@ public class AccessResultsResource {
         response.header("Content-Disposition", "attachment; filename=\"Pak.dat\"");
         return response.build();        
     }     
+
+    @GET
+    @Path("/simulation/headmodel/{sessionid}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getAllHeadFiles(@PathParam("sessionid") String sessionid)
+    {
+        try {
+            PropertiesManager prop = PropertiesManager.getPropertiesManager();
+            String pakDATPath = new String(prop.getPropertyValue("BaseSessionFolder") + sessionid 
+                            + "/" + prop.getPropertyValue("ResultsHeadPath") + "Pak.dat");
+            String pakUNVPath = new String(prop.getPropertyValue("BaseSessionFolder") + sessionid 
+                            + "/" + prop.getPropertyValue("ResultsHeadPath") + "Pak.unv");
+            System.err.println(pakUNVPath);
+            File pakDATFile = new File(pakDATPath);
+            File pakUNVFile  = new File(pakUNVPath);
+            PAKCRestServiceTO simulationInstanceTO = new PAKCRestServiceTO();
+            
+            if(!pakDATFile.exists() || !pakUNVFile.exists())
+            {            
+                ResponseBuilder response = Response.status(Status.NOT_FOUND);
+                return response.build();
+            }
+            
+            byte[] pakcPakDatByteArr = org.apache.commons.io.FileUtils.readFileToByteArray(pakDATFile);
+            byte[] pakcPakUnvByteArr = org.apache.commons.io.FileUtils.readFileToByteArray(pakUNVFile);
+            
+            simulationInstanceTO.setDatFile(pakcPakDatByteArr);
+            simulationInstanceTO.setUnvFile(pakcPakUnvByteArr);
+            String JSONReturn = Util.getJsonStrFromObject(simulationInstanceTO);
+            
+            ResponseBuilder response = Response.ok(JSONReturn);
+            return response.build();   
+        } catch (IOException ex) {
+            Logger.getLogger(AccessResultsResource.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        return Response.status(Status.NOT_FOUND).build();
+    }       
     
     @GET
     @Path("/simulation/{sessionid}")

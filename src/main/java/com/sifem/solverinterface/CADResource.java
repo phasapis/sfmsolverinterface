@@ -56,11 +56,21 @@ public class CADResource
         try
         {
             String[] parameters = new String[2];
-            parameters[0] = prop.getPropertyValue("BaseSessionFolder") 
-                                + sessionID 
-                                + "/" + prop.getPropertyValue("CADPath");
             
-            //parameters[1] = new String("CoiledCochlea");
+            if(modelName.equals("HeadModel"))
+            {
+                parameters[0] = prop.getPropertyValue("BaseSessionFolder") 
+                                + sessionID 
+                                + "/" + prop.getPropertyValue("HeadPath");                
+                
+            }
+            else
+            {
+                parameters[0] = prop.getPropertyValue("BaseSessionFolder") 
+                                + sessionID 
+                                + "/" + prop.getPropertyValue("CADPath");                                
+            }
+            
             parameters[1] = new String(modelName);
             
             System.out.println(" --- EXEPATH: " + parameters[0] + " " + parameters[1]);
@@ -72,10 +82,20 @@ public class CADResource
             Process pr = rt.exec(parameters);
             jobCodeManagement.addCode(sessionID);
             
-            MonitorThreading monitorThreading = new MonitorThreading();
-            Runnable myRunnable = monitorThreading.createRunnable(sessionID);
-            Thread thread = new Thread(myRunnable);
-            thread.start();
+            if(modelName.equals("HeadModel"))
+            {
+                HeadMonitorThreading headMonitorThreading = new HeadMonitorThreading();
+                Runnable myRunnable = headMonitorThreading.createRunnable(sessionID);
+                Thread thread = new Thread(myRunnable);
+                thread.start();
+            }
+            else
+            {
+                MonitorThreading monitorThreading = new MonitorThreading();
+                Runnable myRunnable = monitorThreading.createRunnable(sessionID);
+                Thread thread = new Thread(myRunnable);
+                thread.start();                
+            }
             
             response = Response.ok().build();
         }

@@ -57,7 +57,7 @@ public class CADResource
         {
             String[] parameters = new String[2];
             
-            if(modelName.equals("HeadModel"))
+            if(modelName.equals("HeadModel") || modelName.equals("MiddleEar"))
             {
                 parameters[0] = prop.getPropertyValue("BaseSessionFolder") 
                                 + sessionID 
@@ -82,7 +82,7 @@ public class CADResource
             Process pr = rt.exec(parameters);
             jobCodeManagement.addCode(sessionID);
             
-            if(modelName.equals("HeadModel"))
+            if(modelName.equals("HeadModel") || modelName.equals("MiddleEar"))
             {
                 HeadMonitorThreading headMonitorThreading = new HeadMonitorThreading();
                 Runnable myRunnable = headMonitorThreading.createRunnable(sessionID);

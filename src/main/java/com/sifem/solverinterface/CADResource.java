@@ -57,19 +57,9 @@ public class CADResource
         {
             String[] parameters = new String[2];
             
-            if(modelName.equals("HeadModel") || modelName.equals("MiddleEar"))
-            {
-                parameters[0] = prop.getPropertyValue("BaseSessionFolder") 
-                                + sessionID 
-                                + "/" + prop.getPropertyValue("HeadPath");                
-                
-            }
-            else
-            {
-                parameters[0] = prop.getPropertyValue("BaseSessionFolder") 
+            parameters[0] = prop.getPropertyValue("BaseSessionFolder") 
                                 + sessionID 
                                 + "/" + prop.getPropertyValue("CADPath");                                
-            }
             
             parameters[1] = new String(modelName);
             
@@ -81,8 +71,10 @@ public class CADResource
             }
             Process pr = rt.exec(parameters);
             jobCodeManagement.addCode(sessionID);
-            
-            if(modelName.equals("HeadModel") || modelName.equals("MiddleEar"))
+
+            /*
+            if(modelName.equals("HeadModel") || modelName.equals("MiddleEar") || modelName.equals("CochleaSliceModel1")
+                    || modelName.equals("CochleaSliceModel2") || modelName.equals("CochleaSliceModel3") || modelName.equals("CoupledModel"))
             {
                 HeadMonitorThreading headMonitorThreading = new HeadMonitorThreading();
                 Runnable myRunnable = headMonitorThreading.createRunnable(sessionID);
@@ -91,11 +83,12 @@ public class CADResource
             }
             else
             {
-                MonitorThreading monitorThreading = new MonitorThreading();
-                Runnable myRunnable = monitorThreading.createRunnable(sessionID);
-                Thread thread = new Thread(myRunnable);
-                thread.start();                
-            }
+                    */
+            
+            MonitorThreading monitorThreading = new MonitorThreading();
+            Runnable myRunnable = monitorThreading.createRunnable(sessionID);
+            Thread thread = new Thread(myRunnable);
+            thread.start();                
             
             response = Response.ok().build();
         }

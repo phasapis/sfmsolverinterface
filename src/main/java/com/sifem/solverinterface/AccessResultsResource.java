@@ -28,12 +28,12 @@ public class AccessResultsResource {
     }
 
     @GET
-    @Path("/screenshot/{id}")
+    @Path("/screenshot/{sessionid}/{id}")
     @Produces("image/bmp")
-    public Response getScreenshot(@PathParam("id") String id)
+    public Response getScreenshot(@PathParam("sessionid") String sessionid, @PathParam("id") String id)
     {
         PropertiesManager prop = PropertiesManager.getPropertiesManager();
-        String filename = new String(prop.getPropertyValue("BaseSessionFolder") + "ScreenShot" + id + ".bmp");  
+        String filename = new String(prop.getPropertyValue("BaseSessionFolder") + sessionid + "/" + "ScreenShot" + id + ".bmp");  
         File f = new File(filename);
         
         if(!f.exists())
@@ -100,10 +100,16 @@ public class AccessResultsResource {
     {
         try {
             PropertiesManager prop = PropertiesManager.getPropertiesManager();
+            /*
             String pakDATPath = new String(prop.getPropertyValue("BaseSessionFolder") + sessionid 
                             + "/" + prop.getPropertyValue("ResultsHeadPath") + "Pak.dat");
             String pakUNVPath = new String(prop.getPropertyValue("BaseSessionFolder") + sessionid 
                             + "/" + prop.getPropertyValue("ResultsHeadPath") + "Pak.unv");
+                    */
+            String pakDATPath = new String(prop.getPropertyValue("BaseSessionFolder") + sessionid + "/PAKC/Pak.dat");
+            String pakUNVPath = new String(prop.getPropertyValue("BaseSessionFolder") + sessionid + "/PAKC/Pak.unv");
+            
+            
             System.err.println(pakUNVPath);
             File pakDATFile = new File(pakDATPath);
             File pakUNVFile  = new File(pakUNVPath);
@@ -140,8 +146,21 @@ public class AccessResultsResource {
             PropertiesManager prop = PropertiesManager.getPropertiesManager();
             String pakDATPath = new String(prop.getPropertyValue("BaseSessionFolder") + sessionid + "/PAKC/Pak.dat");
             String pakUNVPath = new String(prop.getPropertyValue("BaseSessionFolder") + sessionid + "/PAKC/Pak.unv");
+            
+            String centerlinePath = new String(prop.getPropertyValue("BaseSessionFolder") + sessionid + "/PAKC/Results/d_centerline.csv");
+            String imagPath = new String(prop.getPropertyValue("BaseSessionFolder") + sessionid + "/PAKC/Results/p_imag.csv");
+            String realPath = new String(prop.getPropertyValue("BaseSessionFolder") + sessionid + "/PAKC/Results/p_real.csv");
+            String magnPath = new String(prop.getPropertyValue("BaseSessionFolder") + sessionid + "/PAKC/Results/v_magn.csv");
+            String phasePath = new String(prop.getPropertyValue("BaseSessionFolder") + sessionid + "/PAKC/Results/v_phase.csv");
+            
             File pakDATFile = new File(pakDATPath);
             File pakUNVFile  = new File(pakUNVPath);
+            File centerlineFile  = new File(centerlinePath);
+            File imagFile  = new File(imagPath);
+            File realFile  = new File(realPath);
+            File magnFile  = new File(magnPath);
+            File phaseFile  = new File(phasePath);
+            
             PAKCRestServiceTO simulationInstanceTO = new PAKCRestServiceTO();
             
             if(!pakDATFile.exists() || !pakUNVFile.exists())
@@ -152,9 +171,38 @@ public class AccessResultsResource {
             
             byte[] pakcPakDatByteArr = org.apache.commons.io.FileUtils.readFileToByteArray(pakDATFile);
             byte[] pakcPakUnvByteArr = org.apache.commons.io.FileUtils.readFileToByteArray(pakUNVFile);
-            
             simulationInstanceTO.setDatFile(pakcPakDatByteArr);
             simulationInstanceTO.setUnvFile(pakcPakUnvByteArr);
+
+            //System.err.println(" - " + centerlinePath);
+            //System.err.println(" - " + centerlineFile.exists());
+            
+            while(!centerlineFile.exists())
+            {
+                        try {            
+                            Thread.sleep(3000);                            
+                        }
+                        catch (InterruptedException ex)
+                        {
+                            Logger.getLogger(AccessResultsResource.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+            }            
+            
+            if(centerlineFile.exists())
+            {
+                byte[] centerlineByteArr = org.apache.commons.io.FileUtils.readFileToByteArray(centerlineFile);
+                byte[] imagByteArr = org.apache.commons.io.FileUtils.readFileToByteArray(imagFile);
+                byte[] realByteArr = org.apache.commons.io.FileUtils.readFileToByteArray(realFile);
+                byte[] magnByteArr = org.apache.commons.io.FileUtils.readFileToByteArray(magnFile);
+                byte[] phaseByteArr = org.apache.commons.io.FileUtils.readFileToByteArray(phaseFile);
+
+                simulationInstanceTO.setCenterline(centerlineByteArr);
+                simulationInstanceTO.setImag(imagByteArr);
+                simulationInstanceTO.setMagn(magnByteArr);
+                simulationInstanceTO.setPhase(phaseByteArr);
+                simulationInstanceTO.setReal(realByteArr);
+            }
+            
             String JSONReturn = Util.getJsonStrFromObject(simulationInstanceTO);
             
             ResponseBuilder response = Response.ok(JSONReturn);

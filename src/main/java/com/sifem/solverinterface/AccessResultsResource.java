@@ -14,9 +14,14 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 import management.configuration.PropertiesManager;
 import eu.sifem.utils.Util;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 @Path("/accessResults")
 public class AccessResultsResource {
@@ -106,6 +111,8 @@ public class AccessResultsResource {
             String pakUNVPath = new String(prop.getPropertyValue("BaseSessionFolder") + sessionid 
                             + "/" + prop.getPropertyValue("ResultsHeadPath") + "Pak.unv");
                     */
+            
+            String zippedpakDATPath = new String(prop.getPropertyValue("BaseSessionFolder") + sessionid + "/PAKC/Pakunv.zip");            
             String pakDATPath = new String(prop.getPropertyValue("BaseSessionFolder") + sessionid + "/PAKC/Pak.dat");
             String pakUNVPath = new String(prop.getPropertyValue("BaseSessionFolder") + sessionid + "/PAKC/Pak.unv");
             
@@ -122,7 +129,11 @@ public class AccessResultsResource {
             }
             
             byte[] pakcPakDatByteArr = org.apache.commons.io.FileUtils.readFileToByteArray(pakDATFile);
-            byte[] pakcPakUnvByteArr = org.apache.commons.io.FileUtils.readFileToByteArray(pakUNVFile);
+            
+            ZipIt(pakUNVPath, zippedpakDATPath);
+            
+            File zipped = new File(zippedpakDATPath);
+            byte[] pakcPakUnvByteArr = org.apache.commons.io.FileUtils.readFileToByteArray(zipped);            
             
             simulationInstanceTO.setDatFile(pakcPakDatByteArr);
             simulationInstanceTO.setUnvFile(pakcPakUnvByteArr);
@@ -144,7 +155,7 @@ public class AccessResultsResource {
     {
         try {
             PropertiesManager prop = PropertiesManager.getPropertiesManager();
-            String pakDATPath = new String(prop.getPropertyValue("BaseSessionFolder") + sessionid + "/PAKC/Pak.dat");
+            String pakDATPath = new String(prop.getPropertyValue("BaseSessionFolder") + sessionid + "/PAKC/Pak.dat");            
             String pakUNVPath = new String(prop.getPropertyValue("BaseSessionFolder") + sessionid + "/PAKC/Pak.unv");
             
             String centerlinePath = new String(prop.getPropertyValue("BaseSessionFolder") + sessionid + "/PAKC/Results/d_centerline.csv");
@@ -171,21 +182,19 @@ public class AccessResultsResource {
             
             byte[] pakcPakDatByteArr = org.apache.commons.io.FileUtils.readFileToByteArray(pakDATFile);
             byte[] pakcPakUnvByteArr = org.apache.commons.io.FileUtils.readFileToByteArray(pakUNVFile);
+            
             simulationInstanceTO.setDatFile(pakcPakDatByteArr);
             simulationInstanceTO.setUnvFile(pakcPakUnvByteArr);
-
-            //System.err.println(" - " + centerlinePath);
-            //System.err.println(" - " + centerlineFile.exists());
             
             while(!centerlineFile.exists())
             {
-                        try {            
-                            Thread.sleep(3000);                            
-                        }
-                        catch (InterruptedException ex)
-                        {
-                            Logger.getLogger(AccessResultsResource.class.getName()).log(Level.SEVERE, null, ex);
-                        }
+                try {            
+                    Thread.sleep(3000);                            
+                }
+                catch (InterruptedException ex)
+                {
+                    Logger.getLogger(AccessResultsResource.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }            
             
             if(centerlineFile.exists())
@@ -196,22 +205,104 @@ public class AccessResultsResource {
                 byte[] magnByteArr = org.apache.commons.io.FileUtils.readFileToByteArray(magnFile);
                 byte[] phaseByteArr = org.apache.commons.io.FileUtils.readFileToByteArray(phaseFile);
 
-                simulationInstanceTO.setCenterline(centerlineByteArr);
-                simulationInstanceTO.setImag(imagByteArr);
-                simulationInstanceTO.setMagn(magnByteArr);
-                simulationInstanceTO.setPhase(phaseByteArr);
-                simulationInstanceTO.setReal(realByteArr);
+                simulationInstanceTO.setdCenterLineFile(centerlineByteArr);
+                simulationInstanceTO.setpImagFile(imagByteArr);
+                simulationInstanceTO.setvMagnFile(magnByteArr);
+                simulationInstanceTO.setvPhaseFile(phaseByteArr);
+                simulationInstanceTO.setpRealFile(realByteArr);
             }
             
             String JSONReturn = Util.getJsonStrFromObject(simulationInstanceTO);
             
             ResponseBuilder response = Response.ok(JSONReturn);
-            return response.build();   
+            return response.build();
+            
         } catch (IOException ex) {
             Logger.getLogger(AccessResultsResource.class.getName()).log(Level.SEVERE, null, ex);
         }
         
         return Response.status(Status.NOT_FOUND).build();
     }    
+
+    public void ZipIt(String inpath, String outpath)
+    {
+    	byte[] buffer = new byte[1024];
+    	
+    	try{
+    		
+    		FileOutputStream fos = new FileOutputStream(outpath);
+    		ZipOutputStream zos = new ZipOutputStream(fos);
+    		ZipEntry ze= new ZipEntry("Pak.unv");
+    		zos.putNextEntry(ze);
+    		FileInputStream in = new FileInputStream(inpath);
+   	   
+    		int len;
+    		while ((len = in.read(buffer)) > 0) {
+    			zos.write(buffer, 0, len);
+    		}
+
+    		in.close();
+    		zos.closeEntry();
+           
+    		//remember close it
+    		zos.close();
+          
+    		System.out.println("Done");
+
+    	}catch(IOException ex){
+    	   ex.printStackTrace();
+    	}
+    }
+    
+    
+    public void unZipIt(String zipFile, String outputFolder){
+
+     byte[] buffer = new byte[1024];
+    	
+     try{
+    		
+    	//create output directory is not exists
+    	File folder = new File(outputFolder);
+    	if(!folder.exists()){
+    		folder.mkdir();
+    	}
+    		
+    	//get the zip file content
+    	ZipInputStream zis = 
+    		new ZipInputStream(new FileInputStream(zipFile));
+    	//get the zipped file list entry
+    	ZipEntry ze = zis.getNextEntry();
+    		
+    	while(ze!=null){
+    			
+    	   String fileName = ze.getName();
+           File newFile = new File(outputFolder + File.separator + fileName);
+                
+           System.out.println("file unzip : "+ newFile.getAbsoluteFile());
+                
+            //create all non exists folders
+            //else you will hit FileNotFoundException for compressed folder
+            new File(newFile.getParent()).mkdirs();
+              
+            FileOutputStream fos = new FileOutputStream(newFile);             
+
+            int len;
+            while ((len = zis.read(buffer)) > 0) {
+       		fos.write(buffer, 0, len);
+            }
+        		
+            fos.close();   
+            ze = zis.getNextEntry();
+    	}
+    	
+        zis.closeEntry();
+    	zis.close();
+    		
+    	System.out.println("Done");
+    		
+    }catch(IOException ex){
+       ex.printStackTrace(); 
+    }
+   }    
     
 }

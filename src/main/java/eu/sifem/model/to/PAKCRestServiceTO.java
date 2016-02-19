@@ -11,57 +11,61 @@ public class PAKCRestServiceTO implements AbstractTO{
 
         private byte[] unvFile;
         
-        private byte[] centerline;
+        private byte[] pImagFile;
         
-        private byte[] imag;
+        private byte[] dCenterLineFile;
         
-        private byte[] real;
+        private byte[] pRealFile;
         
-        private byte[] magn;
+        private byte[] vMagnFile;
         
-        private byte[] phase;        
+        private byte[] vPhaseFile;
+        
+        
+        
+        
 
-        public byte[] getCenterline() {
-            return centerline;
-        }
+        public byte[] getpImagFile() {
+			return pImagFile;
+		}
 
-        public void setCenterline(byte[] centerline) {
-            this.centerline = centerline;
-        }
+		public void setpImagFile(byte[] pImagFile) {
+			this.pImagFile = pImagFile;
+		}
 
-        public byte[] getImag() {
-            return imag;
-        }
+		public byte[] getdCenterLineFile() {
+			return dCenterLineFile;
+		}
 
-        public void setImag(byte[] imag) {
-            this.imag = imag;
-        }
+		public void setdCenterLineFile(byte[] dCenterLineFile) {
+			this.dCenterLineFile = dCenterLineFile;
+		}
 
-        public byte[] getReal() {
-            return real;
-        }
+		public byte[] getpRealFile() {
+			return pRealFile;
+		}
 
-        public void setReal(byte[] real) {
-            this.real = real;
-        }
+		public void setpRealFile(byte[] pRealFile) {
+			this.pRealFile = pRealFile;
+		}
 
-        public byte[] getMagn() {
-            return magn;
-        }
+		public byte[] getvMagnFile() {
+			return vMagnFile;
+		}
 
-        public void setMagn(byte[] magn) {
-            this.magn = magn;
-        }
+		public void setvMagnFile(byte[] vMagnFile) {
+			this.vMagnFile = vMagnFile;
+		}
 
-        public byte[] getPhase() {
-            return phase;
-        }
+		public byte[] getvPhaseFile() {
+			return vPhaseFile;
+		}
 
-        public void setPhase(byte[] phase) {
-            this.phase = phase;
-        }
+		public void setvPhaseFile(byte[] vPhaseFile) {
+			this.vPhaseFile = vPhaseFile;
+		}
 
-        public byte[] getCfgFile() {
+		public byte[] getCfgFile() {
                 return cfgFile;
         }
 
